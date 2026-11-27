@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTracker — Mini Sistema de Rutinas</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-hover: #273449;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* ==================== LOGIN ==================== */
+  .login-container {
+    background: var(--card);
+    padding: 40px;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+  }
+
+  .login-container h1 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .login-container .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--primary-hover); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    padding: 8px;
+    margin-top: 12px;
+  }
+
+  .btn-secondary:hover { color: var(--text); border-color: var(--primary); }
+
+  .error-msg {
+    color: var(--danger);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 12px;
+    min-height: 18px;
+  }
+
+  /* ==================== APP / DASHBOARD ==================== */
+  #app {
+    display: none;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+
+  .header h2 { font-size: 20px; }
+  .header .user-info { color: var(--text-muted); font-size: 14px; }
+
+  .btn-logout {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .btn-logout:hover { opacity: 0.85; }
+
+  .workout-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+  }
+
+  .workout-card:hover {
+    border-color: var(--primary);
+    background: var(--card-hover);
+  }
+
+  .workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .workout-title {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .workout-date {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .exercise-list {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .exercise-list li {
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .exercise-list li:first-child { border-top: none; }
+
+  .exercise-name { font-weight: 500; }
+  .exercise-detail { color: var(--text-muted); font-size: 13px; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 20px;
+    font-size: 14px;
+  }
+
+  .btn-new-workout {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  .btn-new-workout:hover { opacity: 0.9; }
+
+  /* ==================== MODAL ==================== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+  }
+
+  .modal h3 {
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+
+  .exercise-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: end;
+  }
+
+  .exercise-row input {
+    padding: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    width: 100%;
+  }
+
+  .exercise-row input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .btn-add-row {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    height: 38px;
+  }
+
+  .btn-remove-row {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    height: 38px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .modal-actions .btn { flex: 1; }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-cancel:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div class="login-container" id="loginScreen">
+  <h1>🏋️ FitTracker</h1>
+  <p class="subtitle">Inicia sesión para gestionar tus rutinas</p>
+
+  <div class="form-group">
+    <label for="username">Usuario</label>
+    <input type="text" id="username" placeholder="ej: juan" value="demo">
+  </div>
+
+  <div class="form-group">
+    <label for="password">Contraseña</label>
+    <input type="password" id="password" placeholder="••••••••" value="demo123">
+  </div>
+
+  <button class="btn btn-primary" onclick="handleLogin()">Entrar</button>
+  <button class="btn btn-secondary" onclick="handleRegister()">¿No tienes cuenta? Regístrate</button>
+
+  <p class="error-msg" id="loginError"></p>
+</div>
+
+<!-- ==================== APP SCREEN ==================== -->
+<div id="app">
+  <div class="header">
+    <div>
+      <h2>💪 Mis Rutinas</h2>
+      <p class="user-info" id="userInfo">Hola, demo 👋</p>
+    </div>
+    <button class="btn-logout" onclick="handleLogout()">Salir</button>
+  </div>
+
+  <button class="btn-new-workout" onclick="openNewWorkoutModal()">+ Nueva Rutina</button>
+
+  <div id="workoutList"></div>
+</div>
+
+<!-- ==================== MODAL NUEVA RUTINA ==================== -->
+<div class="modal-overlay" id="workoutModal">
+  <div class="modal">
+    <h3 id="modalTitle">Nueva Rutina</h3>
+
+    <div class="form-group">
+      <label>Nombre de la rutina</label>
+      <input type="text" id="workoutName" placeholder="ej: Día de pecho">
+    </div>
+
+    <div class="form-group">
+      <label>Fecha</label>
+      <input type="date" id="workoutDate">
+    </div>
+
+    <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:8px;">
+      Ejercicios (tipo / reps / peso kg)
+    </label>
+
+    <div id="exerciseRows"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveWorkout()">Guardar Rutina</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   "BASE DE DATOS" SIMULADA CON localStorage
+   ========================================================= */
+const DB = {
+  get(key, def = []) {
+    return JSON.parse(localStorage.getItem(key)) || def;
+  },
+  set(key, val) {
+    localStorage.setItem(key, JSON.stringify(val));
+  }
+};
+
+let currentUser = null;
+
+/* =========================================================
+   AUTENTICACIÓN
+   ========================================================= */
+function handleRegister() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  if (!username || !password) {
+    showError('Completa usuario y contraseña');
+    return;
+  }
+
+  const users = DB.get('users');
+  if (users.find(u => u.username === username)) {
+    showError('Ese usuario ya existe');
+    return;
+  }
+
+  users.push({ id: Date.now(), username, password }); // En real: hash!
+  DB.set('users', users);
+  showError('✅ Usuario creado. Ahora inicia sesión.');
+}
+
+function handleLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  const users = DB.get('users');
+
+  // Usuario demo auto-creado si no existe ninguno
+  if (users.length === 0 && username === 'demo' && password === 'demo123') {
+    users.push({ id: 1, username: 'demo', password: 'demo123' });
+    DB.set('users', users);
+  }
+
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) {
+    showError('Usuario o contraseña incorrectos');
+    return;
+  }
+
+  currentUser = user;
+  localStorage.setItem('session', JSON.stringify(user));
+  showApp();
+}
+
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem('session');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'block';
+  showError('');
+}
+
+function showError(msg) {
+  document.getElementById('loginError').textContent = msg;
+}
+
+/* =========================================================
+   RENDER DASHBOARD
+   ========================================================= */
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('userInfo').textContent = `Hola, ${currentUser.username} 👋`;
+  renderWorkouts();
+}
+
+function renderWorkouts() {
+  const workouts = DB.get('workouts').filter(w => w.user_id === currentUser.id);
+  const exercises = DB.get('exercises');
+  const container = document.getElementById('workoutList');
+
+  if (workouts.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      Aún no tienes rutinas.<br>¡Crea la primera con el botón de arriba! 💪
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = workouts
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .map(w => {
+      const exs = exercises.filter(e => e.workout_id === w.id);
+      const exList = exs.length
+        ? `<ul class="exercise-list">${exs.map(e => `
+            <li>
+              <span class="exercise-name">${escapeHtml(e.type)}</span>
+              <span class="exercise-detail">${e.reps} reps · ${e.weight} kg</span>
+            </li>`).join('')}</ul>`
+        : `<p class="empty-state" style="padding:10px 0;">Sin ejercicios registrados</p>`;
+
+      return `
+        <div class="workout-card">
+          <div class="workout-header">
+            <span class="workout-title">📅 ${escapeHtml(w.name)}</span>
+            <span class="workout-date">${w.date}</span>
+          </div>
+          ${exList}
+        </div>`;
+    }).join('');
+}
+
+/* =========================================================
+   MODAL: CREAR RUTINA
+   ========================================================= */
+function openNewWorkoutModal() {
+  document.getElementById('workoutModal').classList.add('active');
+  document.getElementById('workoutName').value = '';
+  document.getElementById('workoutDate').value = new Date().toISOString().split('T')[0];
+
+  const rows = document.getElementById('exerciseRows');
+  rows.innerHTML = '';
+  addExerciseRow();
+}
+
+function closeModal() {
+  document.getElementById('workoutModal').classList.remove('active');
+}
+
+function addExerciseRow() {
+  const rows = document.getElementById('exerciseRows');
+  const div = document.createElement('div');
+  div.className = 'exercise-row';
+  div.innerHTML = `
+    <input type="text" placeholder="Tipo (Press banca)" class="ex-type">
+    <input type="number" placeholder="Reps" class="ex-reps" min="1">
+    <input type="number" placeholder="Peso kg" class="ex-weight" min="0" step="0.5">
+    <button class="btn-remove-row" onclick="this.parentElement.remove()">×</button>
+  `;
+  rows.appendChild(div);
+}
+
+// Auto-añadir nueva fila al rellenar la última
+document.addEventListener('input', (e) => {
+  if (!e.target.matches('.ex-type, .ex-reps, .ex-weight')) return;
+  const rows = document.querySelectorAll('#exerciseRows .exercise-row');
+  const last = rows[rows.length - 1];
+  const filled = last.querySelector('.ex-type').value &&
+                 last.querySelector('.ex-reps').value &&
+                 last.querySelector('.ex-weight').value;
+  if (filled) addExerciseRow();
+});
+
+function saveWorkout() {
+  const name = document.getElementById('workoutName').value.trim();
+  const date = document.getElementById('workoutDate').value;
+
+  if (!name || !date) {
+    alert('Completa el nombre y la fecha de la rutina');
+    return;
+  }
+
+  // Recoger ejercicios válidos
+  const exercisesToSave = [];
+  document.querySelectorAll('#exerciseRows .exercise-row').forEach(row => {
+    const type = row.querySelector('.ex-type').value.trim();
+    const reps = parseInt(row.querySelector('.ex-reps').value);
+    const weight = parseFloat(row.querySelector('.ex-weight').value);
+
+    if (type && reps > 0 && weight >= 0) {
+      exercisesToSave.push({ type, reps, weight });
+    }
+  });
+
+  if (exercisesToSave.length === 0) {
+    alert('Añade al menos un ejercicio');
+    return;
+  }
+
+  // Guardar workout
+  const workouts = DB.get('workouts');
+  const newWorkout = {
+    id: Date.now(),
+    user_id: currentUser.id,
+    name,
+    date
+  };
+  workouts.push(newWorkout);
+  DB.set('workouts', workouts);
+
+  // Guardar exercises
+  const exercises = DB.get('exercises');
+  exercisesToSave.forEach((ex, i) => {
+    exercises.push({
+      id: Date.now() + i,
+      workout_id: newWorkout.id,
+      type: ex.type,
+      reps: ex.reps,
+      weight: ex.weight
+    });
+  });
+  DB.set('exercises', exercises);
+
+  closeModal();
+  renderWorkouts();
+}
+
+/* =========================================================
+   UTILS
+   ========================================================= */
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* =========================================================
+   AUTO-LOGIN si hay sesión guardada
+   ========================================================= */
+window.addEventListener('DOMContentLoaded', () => {
+  const session = localStorage.getItem('session');
+  if (session) {
+    currentUser = JSON.parse(session);
+    showApp();
+  }
+});
+</script>
+</body>
+</html>
